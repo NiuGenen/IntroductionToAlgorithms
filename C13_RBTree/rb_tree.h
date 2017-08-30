@@ -62,6 +62,7 @@ struct rb_node* rb_find_node(
 void rb_tree_pr( struct rb_tree* T );
 void rb_node_pr( struct rb_node* node, int if_pr_child );
 void rb_key_pr( RB_NODE_KEY_TYPE key );
+void rb_color_pr( struct rb_node* node );
 
 int rb_node_is_leaf( struct rb_node* node );
 int rb_node_has_left( struct rb_node* node );
