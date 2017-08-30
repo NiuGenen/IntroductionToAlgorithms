@@ -11,19 +11,26 @@
  *
  */
 
-struct rb_node* alloc_rb_node()
+struct rb_node* rb_node_alloc()
 {
-    struct rb_node* ret = (struct rb_node)malloc( sizeof(struct rb_node) );
+    struct rb_node* ret =
+        (struct rb_node*)malloc( sizeof(struct rb_node) );
     ret->key    = RB_KEY_NONE;
     ret->left   = NULL;
     ret->right  = NULL;
     ret->parent = NULL;
     ret->color  = RB_COLOR_NONE;
+
+    return ret;
 }
 
-void free_rb_node( struct rb_node** node )
+void rb_node_free( struct rb_node** node , int if_free_child )
 {
-    if( *node != NULL ){
+    if( node != NULL && *node != NULL ){
+        if( if_free_child ){
+            rb_node_free( &((*node)->left),  1 );
+            rb_node_free( &((*node)->right), 1 );
+        }
         free(*node);
         *node = NULL;
     }
@@ -36,21 +43,6 @@ void free_rb_node( struct rb_node** node )
  * set
  *
  */
-
-int rb_key_cmp_in_node( struct rb_node* x, struct rb_node* y )
-{
-    if( x != NULL && y != NULL ){
-        if( x->key < y->key ){
-            return -1;
-        }
-        else if( x->key > y->key ){
-            return 1;
-        }
-        else{
-            return 0;
-        }
-    }
-}
 
 int rb_key_cmp( RB_NODE_KEY_TYPE x, RB_NODE_KEY_TYPE y )
 {
@@ -65,7 +57,9 @@ int rb_key_cmp( RB_NODE_KEY_TYPE x, RB_NODE_KEY_TYPE y )
     }
 }
 
-void set_rb_node_key( struct rb_node* node, RB_NODE_KEY_TYPE key )
+void rb_node_set_key(
+    struct rb_node* node,
+    RB_NODE_KEY_TYPE key )
 {
     if( node != NULL ){
         node->key = key;
@@ -79,16 +73,22 @@ void set_rb_node_key( struct rb_node* node, RB_NODE_KEY_TYPE key )
  *
  */
 
-struct rb_tree* alloc_rb_tree()
+struct rb_tree* rb_tree_alloc()
 {
     struct rb_tree* ret = (struct rb_tree*)malloc( sizeof(struct rb_tree) );
     ret->node_nr = 0;
     ret->root = NULL;
+    
+    return ret;
 }
 
-void free_rb_tree( struct rb_tree** T )
+void rb_tree_free( struct rb_tree** T , int if_free_child )
 {
-    if( *T != NULL ){
+    if( T != NULL && *T != NULL ){
+        if( if_free_child ){
+            rb_node_free( &( (*T)->root->left  ), 1 );
+            rb_node_free( &( (*T)->root->right ), 1 );
+        }
         free(*T);
         *T = NULL;
     }
@@ -103,66 +103,490 @@ void free_rb_tree( struct rb_tree** T )
  *
  */
 
+int rb_node_parent_red( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->parent == NULL ) return 0;
+
+    return node->parent->color == RB_COLOR_RED;
+}
+
+int rb_node_parent_black( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->parent == NULL ) return 0;
+
+    return node->parent->color == RB_COLOR_BLACK;
+}
+
+int rb_node_is_left( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->parent == NULL ) return 0;
+
+    return node == node->parent->left;
+}
+
+int rb_node_is_right( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->parent == NULL ) return 0;
+
+    return node == node->parent->right;
+}
+
+int rb_node_has_grand_parent( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->parent == NULL ) return 0;
+    if( node->parent->parent == NULL ) return 0;
+    return 1;
+}
+
+int rb_node_parent_is_left( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->parent == NULL ) return 0;
+    if( node->parent->parent == NULL ) return 0;
+
+    return node->parent == node->parent->parent->left;
+}
+
+int rb_node_parent_is_right( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->parent == NULL ) return 0;
+    if( node->parent->parent == NULL ) return 0;
+
+    return node->parent == node->parent->parent->right;
+}
+
+int rb_node_is_root( struct rb_tree* T, struct rb_node* node )
+{
+    if( T->root == NULL ) return 0;
+    if( node == NULL ) return -1;
+
+    return node == T->root;
+}
+
+void rb_node_left_rotate(
+    struct rb_tree* T,
+    struct rb_node* node )
+{
+    if( rb_node_has_right(node) > 0 ){
+        struct rb_node* node_right = node->right;
+        if( rb_node_has_left(node_right) > 0 ){
+            node->right = node_right->left;
+            node_right->left->parent = node;
+        }else{
+            node->right = NULL;
+        }
+        node_right->left = node;
+        if( rb_node_has_parent(node) > 0 ){
+            struct rb_node* node_parent = node->parent;
+            if( rb_node_is_left(node) > 0){
+                node_parent->left = node_right;
+            }
+            else{
+                node_parent->right = node_right;
+            }
+            node_right->parent = node_parent;
+        }
+        else{
+            node_right->parent = NULL;
+        }
+        node->parent = node_right;
+        if( rb_node_is_root( T, node ) > 0 ){
+            T->root = node_right;
+        }
+    }
+}
+
+void rb_node_right_rotate(
+    struct rb_tree* T,
+    struct rb_node* node )
+{
+    if( rb_node_has_left(node) > 0 ){
+        struct rb_node* node_left= node->left;
+        if( rb_node_has_right(node_left) > 0 ){
+            node->left = node_left->right;
+            node_left->right->parent = node;
+        }else{
+            node->left = NULL;
+        }
+        node_left->right = node;
+        if( rb_node_has_parent(node) > 0 ){
+            struct rb_node* node_parent = node->parent;
+            if( rb_node_is_left(node) > 0){
+                node_parent->left = node_left;
+            }
+            else{
+                node_parent->right = node_left;
+            }
+            node_left->parent = node_parent;
+        }
+        else{
+            node_left->parent = NULL;
+        }
+        node->parent = node_left;
+        if( rb_node_is_root( T, node ) > 0 ){
+            T->root = node_left;
+        }
+    }
+}
+
+void rb_insert_fixup(
+    struct rb_tree * T, 
+    struct rb_node* node )
+{
+    while( rb_node_parent_red(node) > 0 ){
+        if( rb_node_parent_is_left(node) > 0 ){
+            struct rb_node* uncle = node->parent->parent->right;
+            if( rb_node_is_red( uncle ) > 0 ){
+                node->parent->color = RB_COLOR_BLACK;
+                uncle->color = RB_COLOR_BLACK;
+                node->parent->parent->color = RB_COLOR_RED;
+                node = node->parent->parent;
+            }
+            else if( rb_node_is_right(node) > 0 ){
+                node = node->parent;
+                rb_node_left_rotate( T,  node );
+            }
+            else if( rb_node_has_parent(node) ){
+               node->parent->color = RB_COLOR_BLACK;
+               if( rb_node_has_grand_parent(node) ){
+                   node->parent->parent->color = RB_COLOR_RED;
+                   rb_node_right_rotate( T,  node->parent->parent );
+               }
+            }
+        }
+        else if( rb_node_parent_is_right(node) > 0) {
+            struct rb_node* uncle = node->parent->parent->left;
+            if( rb_node_is_red( uncle ) > 0 ){
+                node->parent->color = RB_COLOR_BLACK;
+                uncle->color = RB_COLOR_BLACK;
+                node->parent->parent->color = RB_COLOR_RED;
+                node = node->parent->parent;
+            }
+            else if( rb_node_is_left(node) > 0 ){
+                node = node->parent;
+                rb_node_right_rotate( T, node );
+            }
+            else if( rb_node_has_parent(node) ){
+               node->parent->color = RB_COLOR_BLACK;
+               if( rb_node_has_grand_parent(node) ){
+                   node->parent->parent->color = RB_COLOR_RED;
+                   rb_node_left_rotate( T, node->parent->parent );
+               }
+            }
+        }
+    }
+    T->root->color = RB_COLOR_BLACK;
+}
+
 int rb_insert( struct rb_tree* T, struct rb_node* node )
 {
     if( T == NULL ) return 0;
-    if( T->root == NULL ) return 0;
+    /*if( T->root == NULL ) return 0;*/
+    if( node == NULL ) return 0;
+    
+    struct rb_node* root = T->root;
+
+    // insert
+    if( root == NULL ){
+        T->root = node;
+        T->node_nr += 1;
+
+        node->parent = NULL;
+        node->left   = NULL;
+        node->right  = NULL;
+        node->color  = RB_COLOR_BLACK;
+    }else{
+        struct rb_node* cur  = root;
+        int cmp = rb_key_cmp( node->key, cur->key );
+        while( !rb_node_is_leaf(cur) ){
+            if( cmp == 0 ){
+                printf("[ERROR] insert key already exists\n");
+                return 0;
+            }
+            if( cmp < 0 ){
+                if( rb_node_has_left(cur) )
+                    cur = cur->left;
+                else  break;
+                cmp = rb_key_cmp( node->key, cur->key );
+            }
+            else{
+                if( rb_node_has_right(cur) )
+                    cur = cur->right;
+                else break;
+                cmp = rb_key_cmp( node->key, cur->key );
+            }
+        }
+        if( cmp < 0 ) cur->left = node;
+        else cur->right = node;
+        T->node_nr += 1;
+        node->left = NULL;
+        node->right = NULL;
+        node->parent = cur;
+        node->color = RB_COLOR_RED;
+    }
+
+    // fixup 
+    rb_insert_fixup( T, node );
+
+    return 1;
 }
 
 int rb_delete( struct rb_tree* T, RB_NODE_KEY_TYPE key )
 {
     if( T == NULL ) return 0;
     if( T->root == NULL ) return 0;
+    
+    return 1;
+}
+
+struct rb_node* rb_find_node( struct rb_tree* T,  RB_NODE_KEY_TYPE key )
+{
+    if( T == NULL ) return NULL;
+    if( T->root == NULL ) return NULL;
+
+    struct rb_node* ret = NULL;
+    struct rb_node* current = T->root;
+    while( ret == NULL ){
+        if( current == NULL ) break;
+
+        int cmp = rb_key_cmp( key, current->key );
+        if( cmp == 0 ){
+            ret = current;
+        }
+        else{
+            if( cmp < 0 ){
+                current = current->left;
+            }
+            else{ // cmp > 0
+                current = current->right;
+            }
+        }
+    }
+
+    return ret;
 }
 
 /*
  * print rb tree
  */
 
-void pr_rb_tree( struct rb_tree* T )
-{
-    if( T == NULL ) return;
-    if( T->root == NULL ) return;
-
-    printf("====== RB TREE =====\n");
-    printf("Node nr = %lu\n", T->node_nr );
-    pr_rb_node( T->root );
-    printf("====================\n");
-}
-
-void pr_rb_node( struct rb_node* node , int if_pr_child )
-{
-    if( node == NULL ) return;
-
-    printf("----- NODE -----\n");
-    printf("Address = %x\n", node);
-    printf("Key = ");   pr_rb_key( node->key ); printf("\n");
-    printf("Color = "); pr_rb_color( node );    printf("\n");
-    printf("Left   = %x\n", node->left   );
-    printf("Right  = %x\n", node->right  );
-    printf("Parent = %x\n", node->parent );
-    printf("----------------\n");
-
-    if( if_pr_child ){
-        pr_rb_node( node->left  );
-        pr_rb_node( node->right );
-    }
-}
-
-void pr_rb_key( RB_NODE_KEY_TYPE key )
-{
-    printf("%lu", key);
-}
-
-void pr_rb_color( struct rb_node* node )
+void rb_color_pr( struct rb_node* node )
 {
     if( node == NULL ) return;
 
     switch( node->color ){
-        case RB_COLOR_NONE:  printf("NONE");   break;
-        case RB_COLOR_BLACK: printf("BLACK");  break;
-        case RB_COLOR_RED:   printf("RED");    break;
-        default:             printf("WHAT???") break;
+        case RB_COLOR_NONE:  printf("NONE");    break;
+        case RB_COLOR_BLACK: printf("BLACK");   break;
+        case RB_COLOR_RED:   printf("RED");     break;
+        default:             printf("WHAT???"); break;
     }
 
+}
+
+void rb_node_pr( struct rb_node* node , int if_pr_child )
+{
+    if( node == NULL ) return;
+
+    printf("----- NODE -----\n");
+    printf("Address = %lx\n",(size_t)node );
+    printf("Key = ");   rb_key_pr( node->key ); printf("\n");
+    printf("Color = "); rb_color_pr( node );    printf("\n");
+    printf("Left   = %lx\n", (size_t)node->left   );
+    printf("Right  = %lx\n", (size_t)node->right  );
+    printf("Parent = %lx\n", (size_t)node->parent );
+    printf("----------------\n");
+
+    if( if_pr_child ){
+        rb_node_pr( node->left  , if_pr_child );
+        rb_node_pr( node->right , if_pr_child );
+    }
+}
+
+void rb_key_pr( RB_NODE_KEY_TYPE key )
+{
+    printf("%lu", key);
+}
+
+void rb_tree_pr( struct rb_tree* T )
+{
+    if( T == NULL ){
+        printf("There is no rb_tree\n");
+        return;
+    }
+    if( T->root == NULL ){
+        printf("There is no root\n");
+        return;
+    }
+
+    printf("====== RB TREE =====\n");
+    printf("Node nr = %lu\n", T->node_nr );
+    rb_node_pr( T->root , 1 );
+    printf("====================\n");
+}
+
+/*
+ * check if rb_tree is valid
+ * 
+ */
+
+int rb_node_is_leaf( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->left == NULL && node->right == NULL ) return 1;
+    return 0;
+}
+
+int rb_node_has_left( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->left != NULL) return 1;
+    else return 0;
+}
+
+int rb_node_has_right( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->right != NULL ) return 1;
+    else return 0;
+}
+
+int rb_node_has_parent( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->parent != NULL ) return 1;
+    else return 0;
+}
+
+int rb_node_is_black( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->color == RB_COLOR_BLACK ) return 1;
+    else return 0;
+}
+
+int rb_node_is_red( struct rb_node* node )
+{
+    if( node == NULL ) return -1;
+    if( node->color == RB_COLOR_RED ) return 1;
+    else return 0;
+}
+
+int rb_node_check_color(
+    struct rb_node* node,
+    int if_check_child )
+{
+    if( node == NULL ) return -1;
+
+    int ret = 1;
+
+    if( rb_node_is_red(node) > 0 ){
+        if( rb_node_has_left( node) > 0  )
+           ret &= rb_node_is_black(node->left );
+        if( rb_node_has_right(node) > 0 )
+           ret &= rb_node_is_black(node->right);
+    }
+
+    if( if_check_child ){
+        if( rb_node_has_left( node) > 0 )
+           ret &= rb_node_check_color( node->left , 1 );
+        if( rb_node_has_right(node) > 0 )
+           ret &= rb_node_check_color( node->right, 1);
+    }
+
+    return ret;
+}
+
+int rb_tree_check_black_hight_get_hight(
+    struct rb_tree* T,
+    struct rb_node* node )
+{
+    size_t hight = 0;
+    while( rb_node_is_root(T,node) != 1 ){
+        if( node->color == RB_COLOR_BLACK ){
+            hight += 1;
+        }
+        node = node->parent;
+    }
+    return hight;
+}
+
+size_t saved_hight = 0;
+
+int rb_tree_check_black_hight_help(
+    struct rb_tree* T,
+    struct rb_node* node )
+{
+    if( !rb_node_is_leaf(node) ){
+        int ret = 1;
+        if( rb_node_has_left(node) > 0 ){
+            ret &= rb_tree_check_black_hight_help(T,node->left);
+        }
+        if( rb_node_has_right(node) > 0 ){
+            ret &= rb_tree_check_black_hight_help(T,node->right);
+        }
+        return ret;
+    }
+    else{
+        size_t hight = rb_tree_check_black_hight_get_hight(T,node);
+        if( saved_hight == 0 ){
+            saved_hight = hight;
+            return 1;
+        }
+        else{
+            if( saved_hight != hight ){
+                return 0;
+            }
+            else{
+                return 1;
+            }
+        }
+    }
+}
+
+int rb_tree_check_black_hight( struct rb_tree* T )
+{
+    if( T != NULL && T->root != NULL ){
+        saved_hight  = 0;
+        int ret = rb_tree_check_black_hight_help(T,T->root);
+        return ret;
+    }
+    return 1;
+}
+
+int rb_tree_check( struct rb_tree* T )
+{
+    if( T == NULL ) return 1;
+    if( T->root == NULL ){
+        if( T->node_nr == 0 ){
+            return 2;
+        }
+        else{
+            return 3;
+        }
+    }
+
+    struct rb_node* node = T->root;
+
+    int check_color = rb_node_check_color( node , 1 );
+    check_color &= T->root->color == RB_COLOR_BLACK;
+    if( check_color != 1 ){
+        printf("[Check] wrong color\n");
+        rb_tree_pr( T );
+        return 4;
+    }
+
+    int check_hight = rb_tree_check_black_hight( T );
+    if( check_hight != 1 ){
+        printf("[Check] wrong hight\n");
+        rb_tree_pr( T );
+        return 5;
+    }
+
+    return 0;
 }
