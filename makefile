@@ -5,7 +5,7 @@ cc = gcc
 _time_asker = ask_time.h ask_time.c
 
 test_time_asker: ask_time_test.c ${_time_asker}
-	gcc -o test_time_asker -g \
+	cc -o test_time_asker -g \
 		ask_time_test.c ${_time_asker}
 
 .PHONY: test_dbg
@@ -35,7 +35,7 @@ clean_dirs := $(addprefix _clean_, $(SUBDIRS) )
 
 clean: $(clean_dirs)
 	rm -rf test_dbg_info
+	rm -rf test_time_asker
 
 $(clean_dirs):
 	$(MAKE) -C $(patsubst _clean_%,%,$@) clean
-

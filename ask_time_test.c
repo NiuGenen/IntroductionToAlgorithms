@@ -43,9 +43,19 @@ int main()
     end_ask_time( asker_times );
     ask_time( asker_times );
 
+    // real time 
+    time_asker_t asker_real = asker_alloc( ASKER_TYPE_REAL );
+    start_ask_time( asker_real );
+    time_consuming();
+    end_ask_time( asker_real );
+    ask_time( asker_real );
+
     // free asker
     asker_free( asker_clock );
     asker_free( asker_get_time_of_day );
     asker_free( asker_time );
     asker_free( asker_times );
+    asker_free( asker_real );
+
+    return 0;
 }

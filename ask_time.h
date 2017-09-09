@@ -40,6 +40,21 @@
  * double difftime(time_t time1, time_t time0); // second
  * 
  */ 
+#define ASKER_TYPE_REAL 4
+/* time.h
+ * 
+ * int clock_gettime(clockid_t clk_id, struct timespec *tp);
+ * 
+ * strace timespec{
+ *     time_t tv_sec;
+ *     long tv_nsec;
+ * }
+ * 
+ * CLOCK_REALTIME ; standard
+ * CLOCK_MONOTONIC
+ * CLOCK_PROCESS_CPUTIME_ID
+ * CLOCK_THREAD_CPUTIME_ID 
+ */
 
 #define ASKER_STAT_FREE 0
 #define ASKER_STAT_USED 1

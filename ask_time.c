@@ -86,6 +86,7 @@ time_asker_t asker_alloc( int asker_type )
         case ASKER_TYPE_GET_TIME_OF_DAY: type = ASKER_TYPE_GET_TIME_OF_DAY; break;
         case ASKER_TYPE_TIMES: type = ASKER_TYPE_TIMES; break;
         case ASKER_TYPE_TIME:  type = ASKER_TYPE_TIME;  break;
+        case ASKER_TYPE_REAL:  type = ASKER_TYPE_REAL;  break;
     }
     for( size_t i = 1; i <= ASKER_MAX_NUM; ++i ){
         if( get_asker_stat( asker_s[i] ) == ASKER_STAT_FREE ){
@@ -120,6 +121,7 @@ void start_ask_time( time_asker_t asker )
     struct timeval  *start_get_time_of_day;
     struct tms      *start_times;
     time_t          *start_time;
+    struct timespec *start_real;
 
     switch( get_asker_type( asker_s[ asker ] ) )
     {
@@ -148,6 +150,12 @@ void start_ask_time( time_asker_t asker )
 
             asker_start_time[ asker ] = start_time;
             break;
+        case ASKER_TYPE_REAL:
+            start_real = (struct timespec*)malloc( sizeof( struct timespec ) );
+            clock_gettime( CLOCK_MONOTONIC , start_real );
+
+            asker_start_time[ asker ] = start_real;
+            break;
     }
 }
 
@@ -159,6 +167,7 @@ void end_ask_time( time_asker_t asker )
     struct timeval  *end_get_time_of_day;
     struct tms      *end_times;
     time_t          *end_time;
+    struct timespec *end_real;
 
     switch( get_asker_type( asker_s[ asker ] ) )
     {
@@ -187,6 +196,12 @@ void end_ask_time( time_asker_t asker )
 
             asker__end__time[ asker ] = end_time;
             break;
+        case ASKER_TYPE_REAL:
+            end_real = (struct timespec*)malloc( sizeof(struct timespec) );
+            clock_gettime( CLOCK_MONOTONIC, end_real );
+
+            asker__end__time[ asker ] = end_real;
+            break;
     }
 }
 
@@ -208,6 +223,7 @@ void ask_time_clock( time_asker_t asker );
 void ask_time_get_time_of_day( time_asker_t asker );
 void ask_time_time( time_asker_t asker );
 void ask_time_times( time_asker_t asker );
+void ask_time_real( time_asker_t asker );
 
 void ask_time( time_asker_t asker )
 {
@@ -216,18 +232,11 @@ void ask_time( time_asker_t asker )
     switch( get_asker_type( asker_s[ asker ] ) )
     {
         default:
-        case ASKER_TYPE_CLOCK:
-            ask_time_clock( asker );
-            break;
-        case ASKER_TYPE_TIME:
-            ask_time_time( asker );
-            break;
-        case ASKER_TYPE_TIMES:
-            ask_time_times( asker );
-            break;
-        case ASKER_TYPE_GET_TIME_OF_DAY:
-            ask_time_get_time_of_day( asker );
-            break;
+        case ASKER_TYPE_CLOCK: ask_time_clock( asker ); break;
+        case ASKER_TYPE_TIME:  ask_time_time( asker );  break;
+        case ASKER_TYPE_TIMES: ask_time_times( asker ); break;
+        case ASKER_TYPE_GET_TIME_OF_DAY: ask_time_get_time_of_day( asker ); break;
+        case ASKER_TYPE_REAL:  ask_time_real( asker );  break;
     }
 }
 
@@ -252,9 +261,11 @@ void ask_time_get_time_of_day( time_asker_t asker )
     struct timeval* start = (struct timeval*)asker_start_time[ asker ];
     struct timeval* end   = (struct timeval*)asker__end__time[ asker ];
 
-    long interval_us = end->tv_usec - start->tv_usec 
-                        + ( end->tv_sec - start->tv_sec ) * 1000 * 1000 ;
-    double interval_s      = (double)( interval_us /(double)1000000 );
+    long interval_part_s  = end->tv_sec  - start->tv_sec  ;
+    long interval_part_us = end->tv_usec - start->tv_usec ;
+
+    long interval_us  = interval_part_us + interval_part_s * 1000 * 1000 ;
+    double interval_s = (double)( interval_us /(double)1000000 );
     printf("------ asker get_time_of_day ------\n");
     printf("start(s)  = %ld\n", start->tv_sec);
     printf("start(us) = %ld\n", start->tv_usec);
@@ -273,6 +284,8 @@ void ask_time_time( time_asker_t asker )
     double interval_s = difftime( *end, *start );
 
     printf("------ asker time ------\n");
+    printf("start = %ld\n", *start );
+    printf("end   = %ld\n", *end   );
     printf("interval(s) = %lf\n", interval_s );
     printf("------------------------\n");
 }
@@ -285,6 +298,7 @@ void ask_time_times( time_asker_t asker )
     const long clktck = sysconf( _SC_CLK_TCK );
 
     printf("------ asker times ------\n");
+    printf("clock per second = %ld\n", clktck);
     printf("start user (clock)  = %ld\n", start->tms_utime );
     printf("start sys  (clock)  = %ld\n", start->tms_stime );
     printf("start total(clock)  = %ld\n", start->tms_utime + start->tms_stime );
@@ -298,4 +312,24 @@ void ask_time_times( time_asker_t asker )
     printf("sys  (s) = %lf\n", ( end->tms_stime - start->tms_stime) / (double) clktck );
     printf("total(s) = %lf\n", ( end->tms_utime + end->tms_stime - start->tms_utime - start->tms_stime ) / (double) clktck );
     printf("-------------------------\n");
+}
+
+void ask_time_real( time_asker_t asker )
+{
+    struct timespec* start = (struct timespec*)asker_start_time[ asker ];
+    struct timespec* end   = (struct timespec*)asker__end__time[ asker ];
+
+    long interval_part_s  = end->tv_sec  - start->tv_sec  ;
+    long interval_part_ns = end->tv_nsec - start->tv_nsec ;
+
+    long interval_ns  = interval_part_ns + interval_part_s * 1000 * 1000 * 1000 ;
+    double interval_s = (double)( interval_ns /(double)1000000000 );
+    printf("------ asker real time ------\n");
+    printf("start(s)  = %ld\n", start->tv_sec);
+    printf("start(ns) = %ld\n", start->tv_nsec);
+    printf("end(s)    = %ld\n", end->tv_sec);
+    printf("end(ns)   = %ld\n", end->tv_nsec);
+    printf("interval(ns) = %ld\n", interval_ns );
+    printf("interval(s)  = %lf\n", interval_s );
+    printf("-----------------------------\n");
 }
