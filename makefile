@@ -1,5 +1,13 @@
 cc = gcc 
 
+.PHONY: test_time_asker
+
+_time_asker = ask_time.h ask_time.c
+
+test_time_asker: ask_time_test.c ${_time_asker}
+	gcc -o test_time_asker -g \
+		ask_time_test.c ${_time_asker}
+
 .PHONY: test_dbg
 
 _dbg_info := dbg_info.h 
