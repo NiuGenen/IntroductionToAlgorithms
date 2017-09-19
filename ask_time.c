@@ -210,11 +210,11 @@ void reset_asker( time_asker_t asker )
     if( get_asker_stat( asker_s[ asker ] ) != ASKER_STAT_USED ) return;
 
     if( asker_start_time[ asker ] != NULL ){
-        free( asker_start_time + asker );
+        free( asker_start_time[asker] );
         asker_start_time[ asker ] = NULL;
     }
     if( asker__end__time[ asker ] != NULL ){
-        free( asker__end__time + asker );
+        free( asker__end__time[asker] );
         asker__end__time[ asker ] = NULL;
     }
 }
@@ -245,15 +245,27 @@ void ask_time_clock( time_asker_t asker )
     clock_t* start = (clock_t*)asker_start_time[ asker ];
     clock_t* end   = (clock_t*)asker__end__time[ asker ];
 
+    long cps = CLOCKS_PER_SEC;
+
     clock_t interval_clock = *end - *start;
-    double interval_s      = (double)( interval_clock /(double)CLOCKS_PER_SEC );
-    printf("------ asker clock ------\n");
-    printf("CLOCKS_PER_SEC = %ld\n", CLOCKS_PER_SEC );
-    printf("start = %ld\n", *start );
-    printf("end   = %ld\n", *end   );
-    printf("interval(clock) = %ld\n", interval_clock );
-    printf("interval(s)     = %lf\n", interval_s );
-    printf("-------------------------\n");
+    double interval_s      = (double)( interval_clock /(double)cps );
+
+    ITA_DBG_INFO ( ITA_DBG_T_STR  , "------ asker clock ------"            );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "CLOCKS_PER_SEC = "  , &cps            );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "start = "           , start           );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "end   = "           , end             );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "interval(clock) = " , &interval_clock );
+    ITA_DBG_INFO_( ITA_DBG_T_FLO  , "interval(s)     = " , &interval_s     );
+    ITA_DBG_INFO ( ITA_DBG_T_STR  , "------------------------"             );
+#ifndef ITA_DBG_ENABLE
+    printf("------ asker clock ------\n"              );
+    printf("CLOCKS_PER_SEC = %ld\n"  , cps            );
+    printf("start = %ld\n"           , *start         );
+    printf("end   = %ld\n"           , *end           );
+    printf("interval(clock) = %ld\n" , interval_clock );
+    printf("interval(s)     = %lf\n" , interval_s     );
+    printf("-------------------------\n"              );
+#endif
 }
 
 void ask_time_get_time_of_day( time_asker_t asker )
@@ -266,14 +278,26 @@ void ask_time_get_time_of_day( time_asker_t asker )
 
     long interval_us  = interval_part_us + interval_part_s * 1000 * 1000 ;
     double interval_s = (double)( interval_us /(double)1000000 );
-    printf("------ asker get_time_of_day ------\n");
-    printf("start(s)  = %ld\n", start->tv_sec);
-    printf("start(us) = %ld\n", start->tv_usec);
-    printf("end(s)    = %ld\n", end->tv_sec);
-    printf("end(us)   = %ld\n", end->tv_usec);
-    printf("interval(us) = %ld\n", interval_us );
-    printf("interval(s)  = %lf\n", interval_s );
-    printf("-----------------------------------\n");
+
+    ITA_DBG_INFO ( ITA_DBG_T_STR  , "------ asker get_time_of_day ------"   );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "start(s)  = "    , &(start->tv_sec)    );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "start(us) = "    , &(start->tv_usec)   );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "end(s)    = "    , &(end->tv_sec)      );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "end(us)   = "    , &(end->tv_usec)     );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "interval(us) = " , &interval_us        );
+    ITA_DBG_INFO_( ITA_DBG_T_FLO  , "interval(s)  = " , &interval_s         );
+    ITA_DBG_INFO ( ITA_DBG_T_STR  , "-----------------------------------"   );
+
+#ifndef ITA_DBG_ENABLE
+    printf("------ asker get_time_of_day ------\n" );
+    printf("start(s)  = %ld\n"    , start->tv_sec  );
+    printf("start(us) = %ld\n"    , start->tv_usec );
+    printf("end(s)    = %ld\n"    , end->tv_sec    );
+    printf("end(us)   = %ld\n"    , end->tv_usec   );
+    printf("interval(us) = %ld\n" , interval_us    );
+    printf("interval(s)  = %lf\n" , interval_s     );
+    printf("-----------------------------------\n" );
+#endif
 }
 
 void ask_time_time( time_asker_t asker )
@@ -283,11 +307,19 @@ void ask_time_time( time_asker_t asker )
 
     double interval_s = difftime( *end, *start );
 
+    ITA_DBG_INFO ( ITA_DBG_T_STR  , "------ asker time ------"      );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "start(s)  = "    , start       );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "start(us) = "    , end         );
+    ITA_DBG_INFO_( ITA_DBG_T_FLO  , "interval(s)  = " , &interval_s );
+    ITA_DBG_INFO ( ITA_DBG_T_STR  , "------------------------"      );
+
+#ifndef ITA_DBG_ENABLE
     printf("------ asker time ------\n");
     printf("start = %ld\n", *start );
     printf("end   = %ld\n", *end   );
     printf("interval(s) = %lf\n", interval_s );
     printf("------------------------\n");
+#endif
 }
 
 void ask_time_times( time_asker_t asker )
@@ -297,21 +329,50 @@ void ask_time_times( time_asker_t asker )
 
     const long clktck = sysconf( _SC_CLK_TCK );
 
+    long start_total_clock = start->tms_utime + start->tms_stime;
+    long end_total_clock   = end->tms_utime + end->tms_stime;
+
+    long user_clock  = end->tms_utime  - start->tms_utime;
+    long sys_clock   = end->tms_stime  - start->tms_stime;
+    long total_clock = end_total_clock - start_total_clock;
+    
+    double user_s  = ( end->tms_utime - start->tms_utime) / (double) clktck ;
+    double sys_s   = ( end->tms_stime - start->tms_stime) / (double) clktck ;
+    double total_s = ( end->tms_utime + end->tms_stime - start->tms_utime - start->tms_stime ) / (double) clktck ;
+
+    ITA_DBG_INFO ( ITA_DBG_T_STR  , "------ asker times ------");
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "clock per second = "    , &clktck              );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "start user (clock)  = " , &(start->tms_utime)  );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "start sys  (clock)  = " , &(start->tms_stime)  );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "start total(clock)  = " , &(start_total_clock) );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "end   user (clock)  = " , &(end->tms_utime)    );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "end   sys  (clock)  = " , &(end->tms_stime)    );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "end   total(clock)  = " , &(end_total_clock)   );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "user (clock) = ", &(user_clock)  );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "sys  (clock) = ", &(sys_clock)   );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "total(clock) = ", &(total_clock) );
+    ITA_DBG_INFO_( ITA_DBG_T_FLO  , "user (s) = ", &(user_s)   );
+    ITA_DBG_INFO_( ITA_DBG_T_FLO  , "sys  (s) = ", &(sys_s)    );
+    ITA_DBG_INFO_( ITA_DBG_T_FLO  , "total(s) = ", &(total_s)  );
+    ITA_DBG_INFO ( ITA_DBG_T_STR  , "-------------------------");
+
+#ifndef ITA_DBG_ENABLE
     printf("------ asker times ------\n");
     printf("clock per second = %ld\n", clktck);
     printf("start user (clock)  = %ld\n", start->tms_utime );
     printf("start sys  (clock)  = %ld\n", start->tms_stime );
-    printf("start total(clock)  = %ld\n", start->tms_utime + start->tms_stime );
+    printf("start total(clock)  = %ld\n", start_total_clock);
     printf("end user (clock)  = %ld\n", end->tms_utime );
     printf("end sys  (clock)  = %ld\n", end->tms_stime );
-    printf("end total(clock)  = %ld\n", end->tms_utime + end->tms_stime );
-    printf("user (s) = %ld\n", end->tms_utime - start->tms_utime );
-    printf("sys  (s) = %ld\n", end->tms_stime - start->tms_stime );
-    printf("total(s) = %ld\n", end->tms_utime + end->tms_stime - start->tms_utime - start->tms_stime );
-    printf("user (s) = %lf\n", ( end->tms_utime - start->tms_utime) / (double) clktck );
-    printf("sys  (s) = %lf\n", ( end->tms_stime - start->tms_stime) / (double) clktck );
-    printf("total(s) = %lf\n", ( end->tms_utime + end->tms_stime - start->tms_utime - start->tms_stime ) / (double) clktck );
+    printf("end total(clock)  = %ld\n", end_total_clock);
+    printf("user (clock) = %ld\n", user_clock );
+    printf("sys  (clock) = %ld\n", sys_clock  );
+    printf("total(clck) = %ld\n", total_clock );
+    printf("user (s) = %lf\n", user_s );
+    printf("sys  (s) = %lf\n", sys_s  );
+    printf("total(s) = %lf\n", total_s);
     printf("-------------------------\n");
+#endif
 }
 
 void ask_time_real( time_asker_t asker )
@@ -324,6 +385,17 @@ void ask_time_real( time_asker_t asker )
 
     long interval_ns  = interval_part_ns + interval_part_s * 1000 * 1000 * 1000 ;
     double interval_s = (double)( interval_ns /(double)1000000000 );
+
+    ITA_DBG_INFO ( ITA_DBG_T_STR  , "------ asker real time ------"    );
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "start(s)  = " , &(start->tv_sec)  ); 
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "start(ns) = " , &(start->tv_nsec) ); 
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "end(s)    = " , &(end->tv_sec)    ); 
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "end(ns)   = " , &(end->tv_nsec)   ); 
+    ITA_DBG_INFO_( ITA_DBG_T_UINT , "interval(ns) = " , &interval_ns   ); 
+    ITA_DBG_INFO_( ITA_DBG_T_FLO  , "interval(s)  = " , &interval_s    );
+    ITA_DBG_INFO ( ITA_DBG_T_STR  , "----------------------------"     );
+
+#ifndef ITA_DBG_ENABLE
     printf("------ asker real time ------\n");
     printf("start(s)  = %ld\n", start->tv_sec);
     printf("start(ns) = %ld\n", start->tv_nsec);
@@ -332,4 +404,5 @@ void ask_time_real( time_asker_t asker )
     printf("interval(ns) = %ld\n", interval_ns );
     printf("interval(s)  = %lf\n", interval_s );
     printf("-----------------------------\n");
+#endif
 }
