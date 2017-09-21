@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../ask_time.h"
+#include "../util/ask_time.h"
 
 #define TEST_SIZE 10000
 ssize_t low_s[ TEST_SIZE ];
