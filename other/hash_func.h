@@ -3,19 +3,21 @@
 
 #include "stddef.h"
 
-typedef long(*hash_fn_t)( char*str, size_t n );
+typedef long hash_func_ret_t;
+
+typedef hash_func_ret_t(*hash_fn_t)( char*str, size_t n );
 
 #define HASH_FUNC_NAME_LEN 10
 
-long hash_rs  ( char* str , size_t n );
-long hash_js  ( char* str , size_t n );
-long hash_pjw ( char* str , size_t n );
-long hash_elf ( char* str , size_t n );
-long hash_bkdr( char* str , size_t n );
-long hash_sdbm( char* str , size_t n );
-long hash_djb ( char* str , size_t n );
-long hash_dek ( char* str , size_t n );
-long hash_ap  ( char* str , size_t n );
+hash_func_ret_t hash_rs  ( char* str , size_t n );
+hash_func_ret_t hash_js  ( char* str , size_t n );
+hash_func_ret_t hash_pjw ( char* str , size_t n );
+hash_func_ret_t hash_elf ( char* str , size_t n );
+hash_func_ret_t hash_bkdr( char* str , size_t n );
+hash_func_ret_t hash_sdbm( char* str , size_t n );
+hash_func_ret_t hash_djb ( char* str , size_t n );
+hash_func_ret_t hash_dek ( char* str , size_t n );
+hash_func_ret_t hash_ap  ( char* str , size_t n );
 
 #ifdef HASH_FUNC_GLOBAL_VAL
 #define HASH_FUNC_NR 9
