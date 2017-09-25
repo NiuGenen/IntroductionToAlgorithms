@@ -1,10 +1,22 @@
 cc = gcc
 
-all:test_hash test_hash_generator test_hash_table test_bloom_filter
+_test := test_hash \
+	test_hash_generator test_hash_table \
+	test_bloom_filter \
+	test_linked_list
 
-_hash_func    = hash_func.c  hash_func.h
-_hash_table   = hash_table.c hash_table.h
-_bloom_filter = bloom_filter.c bloom_filter.h
+all: ${_test}
+
+_hash_func    := hash_func.c  hash_func.h
+_hash_table   := hash_table.c hash_table.h
+_bloom_filter := bloom_filter.c bloom_filter.h
+_linked_list  := linked_list.c linked_list.h
+
+# test_linked_list 
+
+test_linked_list: linked_list_test.c ${_linked_list}
+	cc -o test_linked_list -g \
+		linked_list_test.c ${_linked_list}
 
 # test_bloom_filter
 
@@ -33,5 +45,6 @@ test_hash: ${_hash_func} hash_test.c
 .PHONY: clean
 
 clean:
-	rm -rf test_hash test_hash_generator test_hash_table test_bloom_filter
-	rm -rf *.random result_*
+	rm -rf ${_test}
+	rm -rf *.random 
+	rm -rf result_*
