@@ -19,6 +19,10 @@ void rmv_tail_entry( struct llist* ll );
 void for_each_entry( struct llist* ll, llist_for_each_entry_t for_each_func );
 struct llist_entry* at_entry( struct llist* ll, size_t index );
 
+void node_add_head( struct llist* ll, struct llist_node* node );
+void node_add_tail( struct llist* ll, struct llist_node* node );
+void node_rmv( struct llist* ll, struct llist_node* node );
+
 struct llist* llist_alloc()
 {
     struct llist* ll = ( struct llist* )malloc( sizeof( struct llist ) );
@@ -32,6 +36,10 @@ struct llist* llist_alloc()
     ll->rmv_head = rmv_head_entry;
     ll->rmv_tail = rmv_tail_entry;
     ll->for_each = for_each_entry;
+
+    ll->node_add_head = node_add_head;
+    ll->node_add_tail = node_add_tail;
+    ll->node_rmv = node_rmv;
 
     ll->at = at_entry;
 
@@ -47,48 +55,22 @@ void add_head_entry( struct llist* ll, struct llist_entry* entry )
     node->prev = NULL;
     node->next = NULL;
 
-    if( ll->length == 0 ){
-        ll->head = node;
-        ll->tail = node;
-        node->next = node;
-        node->prev = node;
+    node_add_head( ll, node );
 
-        ll->length += 1;
-        return;
-    }
-
-    struct llist_node* head = ll->head;
-    ll->head = node;
-    node->next = head;
-    node->prev = ll->tail;
-    if( head != NULL ) head->prev = node;
-    if( ll->tail != NULL ) ll->tail->next = node;
-
-    ll->length += 1;
     return;
 }
 
 void add_tail_entry( struct llist* ll, struct llist_entry* entry )
 {
     if( ll == NULL ) return;
-    if( ll->length == 0 ){
-        add_head_entry( ll , entry );
-        return;
-    }
 
     struct llist_node* node = _MALLOC_( struct llist_node , 1 );
     node->entry = entry;
     node->prev = NULL;
     node->next = NULL;
 
-    struct llist_node* tail = ll->tail;
-    ll->tail = node;
-    node->next = ll->head;
-    node->prev = tail;
-    if( tail != NULL ) tail->next = node;
-    if( ll->head != NULL ) ll->head->prev = node;
+    node_add_tail( ll, node );
 
-    ll->length += 1;
     return;
 }
 
@@ -97,22 +79,12 @@ void rmv_head_entry( struct llist* ll )
     if( ll == NULL ) return;
     if( ll->length == 0 ) return;
 
-    if( ll->length == 1 ){
-        struct llist_node* node = ll->head;
-        ll->head = NULL;
-        ll->tail = NULL;
-        ll->length = 0;
-        _FREE_( node );
-        return;
-    }
+    struct llist_node* node = ll->head;
+    node_rmv( ll, node );
 
-    struct llist_node* head = ll->head;
-    ll->head = head->next;
-    ll->head->prev = ll->tail;
-    ll->tail->next = ll->head;
-    _FREE_( head );
+    _FREE_( node->entry );
+    _FREE_( node );
 
-    ll->length -= 1;
     return;
 }
 
@@ -121,18 +93,12 @@ void rmv_tail_entry( struct llist* ll )
     if( ll == NULL ) return;
     if( ll->length == 0 ) return;
 
-    if( ll->length == 1 ){
-        rmv_head_entry( ll );
-        return;
-    }
+    struct llist_node* node = ll->tail;
+    node_rmv( ll, node );
 
-    struct llist_node* tail = ll->tail;
-    ll->tail = ll->tail->prev;
-    ll->tail->next = ll->head;
-    ll->head->prev = ll->tail;
-    _FREE_( tail );
+    _FREE_( node->entry );
+    _FREE_( node );
 
-    ll->length -= 1;
     return;
 }
 
@@ -176,3 +142,90 @@ struct llist_entry* at_entry( struct llist* ll, size_t index )
         return node->entry;
     }  
 }
+
+void node_add_head( struct llist* ll, struct llist_node* node )
+{
+    if( ll == NULL ) return;
+
+    if( ll->length == 0 ){
+        ll->head = node;
+        ll->tail = node;
+        node->next = node;
+        node->prev = node;
+
+        ll->length = 1;
+        return;
+    }
+
+    struct llist_node* head = ll->head;
+    ll->head = node;
+    node->next = head;
+    node->prev = ll->tail;
+    if( head != NULL ) head->prev = node;
+    if( ll->tail != NULL ) ll->tail->next = node;
+
+    ll->length += 1;
+    return;
+}
+
+void node_add_tail( struct llist* ll, struct llist_node* node )
+{
+    if( ll == NULL ) return;
+
+    if( ll->length == 0 ){
+        ll->head = node;
+        ll->tail = node;
+        node->next = node;
+        node->prev = node;
+
+        ll->length = 1;
+        return;
+    }
+
+    struct llist_node* tail = ll->tail;
+    ll->tail = node;
+    node->next = ll->head;
+    node->prev = tail;
+    if( tail != NULL ) tail->next = node;
+    if( ll->head != NULL ) ll->head->prev = node;
+
+    ll->length += 1;
+    return;
+}
+
+void node_rmv( struct llist* ll, struct llist_node* node )
+{
+    if( ll == NULL ) return;
+    if( node == NULL ) return;
+    if( ll->length == 0 ) return;
+
+    if( ll->length == 1 ){
+        ll->head = NULL;
+        ll->tail = NULL;
+        ll->length = 0;
+        node->next = NULL;
+        node->prev = NULL;
+        return;
+    }
+
+    if( node == ll->head ){
+        ll->head = ll->head->next;
+        ll->head->prev = ll->tail;
+        ll->tail->next = ll->head;
+    }else if( node == ll->tail ){
+        ll->tail = ll->tail->prev;
+        ll->tail->next = ll->head;
+        ll->head->prev = ll->tail;
+    }else{
+        struct llist_node* prev = node->prev;
+        struct llist_node* next = node->next;
+        prev->next = next;
+        next->prev = prev;
+    }
+    node->next = NULL;
+    node->prev = NULL;
+    ll->length -= 1;
+    return;
+}
+
+

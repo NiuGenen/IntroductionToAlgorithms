@@ -27,6 +27,10 @@ struct llist{
     void (*rmv_tail)( struct llist* ll );
     struct llist_entry* (*at)( struct llist* ll, size_t index );
     void (*for_each)( struct llist* ll, llist_for_each_entry_t for_each_func );
+
+    void (*node_add_head)( struct llist*ll, struct llist_node* node );
+    void (*node_add_tail)( struct llist*ll, struct llist_node* node );
+    void (*node_rmv)( struct llist*ll, struct llist_node* node );
 };
 
 struct llist* llist_alloc();
