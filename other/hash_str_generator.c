@@ -12,6 +12,12 @@
 #define OUTPUT_NUM 1024
 #define STR_MAX_LEN 1024
 
+/*
+ * each string is length + charactors
+ * 
+ * size_t length : n
+ * char str[n] : 'a''b''c'...'n'
+ */
 int main()
 {
     srand( (unsigned int)time(0) );
