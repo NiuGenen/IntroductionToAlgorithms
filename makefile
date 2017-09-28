@@ -16,8 +16,6 @@ subdirs: $(SUBDIRS)
 clean_dirs := $(addprefix _clean_, $(SUBDIRS) )
 
 clean: $(clean_dirs)
-	rm -rf test_dbg_info
-	rm -rf test_time_asker
 
 $(clean_dirs):
 	$(MAKE) -C $(patsubst _clean_%,%,$@) clean

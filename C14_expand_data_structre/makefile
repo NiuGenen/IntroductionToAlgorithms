@@ -2,25 +2,14 @@ cc = gcc
 
 _test := test_order_statistic test_interval_tree
 
-all:dir ${_test}
+all: ${_test}
 
-ask_time := util/ask_time.h util/ask_time.c
+ask_time := ../util/ask_time.o
 
-dbg_info := util/dbg_info.h 
+dbg_info := ../util/dbg_info.h
 
-# dir 
-
-.PHONY: dir 
-
-dir_cwd    := $(shell pwd)
-dir_cwd_p  := $(shell dirname ${dir_cwd})
-dir_util   := ${dir_cwd_p}/
-
-ask_time := $(foreach var,${ask_time},${dir_util}${var})
-dbg_info := $(foreach var,${dbg_info},${dir_util}${var})
-
-dir:
-	echo ${dir_util}
+${ask_time}:
+	${MAKE} -C ../util obj
 
 # order_statistic
 
@@ -50,3 +39,4 @@ clean:
 	rm -rf result_*
 	rm -rf *.random
 	rm -rf *_data_generator
+	${MAKE} -C ../util clean
