@@ -17,6 +17,8 @@
     double   x_double ; \
     printf("%s" , (char*)str  ); \
     switch(t){ \
+        case ITA_DBG_T_STR: \
+            printf("%s" , (char*)x  ); break; \
         case ITA_DBG_T_UINT: \
             x_uint = *x ; \
             printf("%lu", x_uint ); break; \
