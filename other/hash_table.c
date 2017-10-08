@@ -67,7 +67,7 @@ void hash_table_free( struct hash_table* ht )
 
 void hash_table_insert_entry(
     struct hash_table* ht,
-    struct hash_table_entry* entry)
+    void * entry)
 {
     hash_func_ret_t hash = ht->hash_entry_hash( entry , ht->hash_func );
     hash = hash % ht->size;
@@ -90,7 +90,7 @@ void hash_table_insert_entry(
 
 int  hash_table_exist_entry(
     struct hash_table* ht,
-    struct hash_table_entry* entry)
+    void * entry)
 {
     hash_func_ret_t hash = ht->hash_entry_hash( entry, ht->hash_func );
     hash = hash % ht->size;
@@ -109,7 +109,7 @@ int  hash_table_exist_entry(
 
 void hash_table_delete_entry(
     struct hash_table* ht,
-    struct hash_table_entry* entry )
+    void * entry )
 {
     hash_func_ret_t hash = ht->hash_entry_hash( entry, ht->hash_func );
     hash = hash % ht->size;

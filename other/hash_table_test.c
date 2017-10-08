@@ -6,21 +6,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define _MALLOC_(t,n) ( (t*)malloc(sizeof(t)*(n)) )
+
 struct hash_table_entry{
     char* str;
     size_t n;
 };
 
-void ht_entry_free( struct hash_table_entry* entry )
+void ht_entry_free( void * entry )
 {
     if( entry == NULL ) return;
-
-    free( entry->str );
-    free( entry );
+    struct hash_table_entry* _entry = ( struct hash_table_entry* )entry;
+    free( _entry->str );
+    free( _entry );
 }
 
-void ht_entry_pr( struct hash_table_entry* hte )
+void ht_entry_pr( void * entry )
 {
+    struct hash_table_entry* hte = (struct hash_table_entry*)entry;
     char c[16] = {
         '0','1','2','3',
         '4','5','6','7',
@@ -35,9 +38,12 @@ void ht_entry_pr( struct hash_table_entry* hte )
 }
 
 int ht_entry_cmp(
-    struct hash_table_entry* hte1,
-    struct hash_table_entry* hte2)
+    void * entry_1,
+    void * entry_2)
 {
+    struct hash_table_entry* hte1 = ( struct hash_table_entry* )entry_1;
+    struct hash_table_entry* hte2 = ( struct hash_table_entry* )entry_2;
+
     if( hte1->n != hte2->n ) return 0;
     
     for(size_t i = 0; i < hte1->n; ++i){
@@ -50,9 +56,10 @@ int ht_entry_cmp(
 }
 
 hash_func_ret_t ht_entry_hash(
-    struct hash_table_entry* hte,
+    void * entry,
     hash_fn_t hash_func)
 {
+    struct hash_table_entry* hte = ( struct hash_table_entry* )entry;
     return hash_func( hte->str, hte->n );
 }
 
@@ -74,13 +81,12 @@ int main()
 
     size_t n;
     for(size_t i = 0; i < str_nr; ++i){
-        struct hash_table_entry* entry =
-            (struct hash_table_entry*)malloc( sizeof( struct hash_table_entry ) );
+        struct hash_table_entry* entry = _MALLOC_( struct hash_table_entry, 1 );
         // read str length
         read( fd, &n, sizeof(size_t) );
         printf("Read str.len = %lu ; ", n);
         // malloc str buf
-        entry->str = (char* )malloc( n + 1 );
+        entry->str = _MALLOC_( char, n+1 );
         // read string
         read( fd, entry->str, n );
         // build entry

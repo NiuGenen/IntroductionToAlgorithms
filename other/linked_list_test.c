@@ -11,9 +11,10 @@ struct llist_entry{
     int b;
 };
 
-void llist_for_each_entry( struct llist_entry* entry )
+void llist_for_each_entry( void * entry )
 {
-    printf("[%5d,%5d]\n", entry->a, entry->b );
+    struct llist_entry * _entry = ( struct llist_entry* )entry;
+    printf("[%5d,%5d]\n", _entry->a, _entry->b );
 }
 
 int main()

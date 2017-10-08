@@ -16,20 +16,18 @@
  * using KEY to search
  * 
  */
-struct hash_table_entry;
-
 typedef void (*ht_entry_pr_t)(
-    struct hash_table_entry* hte);
+    void * hte);
 
 typedef int (*ht_entry_cmp_t)(
-    struct hash_table_entry* hte1,
-    struct hash_table_entry* hte2);
+    void * hte1,
+    void * hte2);
 
 typedef hash_func_ret_t (*ht_entry_hash_t)(
-    struct hash_table_entry* hte,
+    void * hte,
     hash_fn_t hash_func );
 typedef void (*ht_entry_free_t)(
-    struct hash_table_entry* entry );
+    void * entry );
 
 /*
  * using linked_list to solve hash collision
@@ -38,7 +36,7 @@ typedef void (*ht_entry_free_t)(
  * 
  */
 struct hash_table_block_entry{
-    struct hash_table_entry* entry;
+    void * entry;
     struct hash_table_block_entry* next;
 };
 
@@ -57,13 +55,13 @@ struct hash_table{
     ht_entry_free_t hash_entry_free ;
     void (*insert_entry)(
         struct hash_table* ht,
-        struct hash_table_entry* entry);
+        void * entry);
     int (*exist_entry)(
         struct hash_table* ht,
-        struct hash_table_entry* entry);
+        void * entry);
     void (*delete_entry)(
         struct hash_table* ht,
-        struct hash_table_entry* entry);
+        void * entry);
     void (*hash_table_pr)(
         struct hash_table* ht );
 };
@@ -80,13 +78,13 @@ void hash_table_free(
 
 void hash_table_insert_entry(
     struct hash_table* ht,
-    struct hash_table_entry* entry);
+    void * entry);
 int hash_table_exist_entry(
     struct hash_table* ht,
-    struct hash_table_entry* entry );
+    void * entry );
 void hash_table_delete_entry(
     struct hash_table* ht,
-    struct hash_table_entry* entry );
+    void * entry );
 void hash_table_pr(
     struct hash_table* ht );
 

@@ -3,15 +3,13 @@
 
 #include <stddef.h>
 
-struct llist_entry;
-
-typedef void (*llist_for_each_entry_t)( struct llist_entry* entry );
+typedef void (*llist_for_each_entry_t)( void * entry );
 
 /*
  * linked list 
  */
 struct llist_node{
-    struct llist_entry* entry;
+    void * entry;
     struct llist_node *prev;
     struct llist_node *next;
 };
@@ -21,11 +19,11 @@ struct llist{
     struct llist_node* tail;
     size_t length;
 
-    void (*add_head)( struct llist* ll, struct llist_entry* entry );
-    void (*add_tail)( struct llist* ll, struct llist_entry* entry );
+    void (*add_head)( struct llist* ll, void * entry );
+    void (*add_tail)( struct llist* ll, void * entry );
     void (*rmv_head)( struct llist* ll );
     void (*rmv_tail)( struct llist* ll );
-    struct llist_entry* (*at)( struct llist* ll, size_t index );
+    void * (*at)( struct llist* ll, size_t index );
     void (*for_each)( struct llist* ll, llist_for_each_entry_t for_each_func );
 
     void (*node_add_head)( struct llist*ll, struct llist_node* node );

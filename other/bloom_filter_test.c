@@ -7,15 +7,18 @@ struct bloom_filter_entry{
     size_t n;
 };
 
-hash_func_ret_t blm_hash( struct bloom_filter_entry* entry, hash_fn_t hash_func )
+/*hash_func_ret_t blm_hash( struct bloom_filter_entry* entry, hash_fn_t hash_func )*/
+hash_func_ret_t blm_hash( void * entry, hash_fn_t hash_func )
 {
-    return hash_func( entry->str, entry->n );
+    struct bloom_filter_entry* _entry = ( struct bloom_filter_entry* )entry;
+    return hash_func( _entry->str, _entry->n );
 }
 
 #ifdef BLM_DBG
-void entry_pr( struct bloom_filter_entry* entry )
+void entry_pr( void * entry )
 {
-    printf("Entry = %s\n", entry->str );
+    struct bloom_filter_entry* _entry = ( struct bloom_filter_entry* )entry;
+    printf("Entry = %s\n", _entry->str );
 }
 #endif
 
@@ -34,7 +37,7 @@ int main()
 #endif
     );
 
-    char str[10][10] = {
+    char str[10][11] = {
         "asdtebf\0",    // 0  7
         "qwezxcvvf\0",  // 1  9
         "zxcvvbds\0",   // 2  8

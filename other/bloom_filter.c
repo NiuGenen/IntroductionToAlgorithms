@@ -2,16 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define _MALLOC_(t,n) ( (t*)malloc(sizeof(t)*(n)) )
+
 void binary_pr( void * value, size_t n );
 
-void blm_add(
-        struct bloom_filter* blm,
-        struct bloom_filter_entry* entry);
-int blm_not_exist(
-        struct bloom_filter* blm,
-        struct bloom_filter_entry* entry);
-void blm_pr(
-        struct bloom_filter* blm);
+void blm_add(      struct bloom_filter* blm, void * entry);
+int blm_not_exist( struct bloom_filter* blm, void * entry);
+void blm_pr(       struct bloom_filter* blm);
 
 /*
  * alloc bloom filter
@@ -26,11 +23,12 @@ struct bloom_filter* blm_alloc(
 #endif
         )
 {
-    struct bloom_filter* blm = ( struct bloom_filter* )malloc( sizeof( struct bloom_filter ) );
+    struct bloom_filter* blm = _MALLOC_( struct bloom_filter, 1 );
 
     blm->bits  = bits;
+    // bb_nr = bits / 64 + bits % 64
     blm->bb_nr = ( bits >> 6 ) + ( ( bits & 0x003F ) ? 1 : 0 );
-    blm->bb    = ( uint64_t* )malloc( sizeof( uint64_t ) * blm->bb_nr );
+    blm->bb    = _MALLOC_( uint64_t, blm->bb_nr );
 
     blm->hash_func_s  = hash_func_s;
     blm->hash_func_nr = hash_fn_nr;
@@ -46,8 +44,7 @@ struct bloom_filter* blm_alloc(
     return blm;
 }
 
-void blm_free(
-        struct bloom_filter* blm )
+void blm_free( struct bloom_filter* blm )
 {
     if( blm == NULL ) return;
 
@@ -55,9 +52,7 @@ void blm_free(
     free( blm );
 }
 
-void blm_add(
-        struct bloom_filter* blm,
-        struct bloom_filter_entry* entry)
+void blm_add( struct bloom_filter* blm, void * entry)
 {
     if( blm == NULL ) return;
     if( entry == NULL ) return;
@@ -92,9 +87,7 @@ void blm_add(
     }
 }
 
-int blm_not_exist(
-        struct bloom_filter* blm,
-        struct bloom_filter_entry* entry)
+int blm_not_exist( struct bloom_filter* blm, void * entry)
 {
     if( blm == NULL ) return 0;
     if( entry == NULL ) return 0;

@@ -12,12 +12,12 @@
     v = NULL; \
 }while(0);
 
-void add_head_entry( struct llist* ll, struct llist_entry* entry );
-void add_tail_entry( struct llist* ll, struct llist_entry* entry );
+void add_head_entry( struct llist* ll, void * entry );
+void add_tail_entry( struct llist* ll, void * entry );
 void rmv_head_entry( struct llist* ll );
 void rmv_tail_entry( struct llist* ll );
 void for_each_entry( struct llist* ll, llist_for_each_entry_t for_each_func );
-struct llist_entry* at_entry( struct llist* ll, size_t index );
+void * at_entry( struct llist* ll, size_t index );
 
 void node_add_head( struct llist* ll, struct llist_node* node );
 void node_add_tail( struct llist* ll, struct llist_node* node );
@@ -46,7 +46,7 @@ struct llist* llist_alloc()
     return ll;
 }
 
-void add_head_entry( struct llist* ll, struct llist_entry* entry )
+void add_head_entry( struct llist* ll, void * entry )
 {
     if( ll == NULL ) return;
 
@@ -60,7 +60,7 @@ void add_head_entry( struct llist* ll, struct llist_entry* entry )
     return;
 }
 
-void add_tail_entry( struct llist* ll, struct llist_entry* entry )
+void add_tail_entry( struct llist* ll, void * entry )
 {
     if( ll == NULL ) return;
 
@@ -117,7 +117,7 @@ void for_each_entry( struct llist* ll, llist_for_each_entry_t for_each_func )
     return;
 }
 
-struct llist_entry* at_entry( struct llist* ll, size_t index )
+void * at_entry( struct llist* ll, size_t index )
 {   // index start from 0
     if( ll == NULL ) return 0;
     if( ll->length == 0 ) return 0;
