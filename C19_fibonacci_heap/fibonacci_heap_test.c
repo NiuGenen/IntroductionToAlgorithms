@@ -18,13 +18,33 @@ void * key_min()
     return v;
 }
 
+void key_pr( void * key )
+{
+    printf("%d", *((int*)key));
+}
+
 int main()
 {
     printf("--- test fibonacci_heap ---\n");
 
-    struct fibonacci_heap * fh = fibonacci_heap_alloc( key_cmp, key_min );
+    struct fibonacci_heap * fh = fibonacci_heap_alloc( key_cmp, key_min , key_pr);
+    // insert / min / extact_min / union
+    // decrease_key / delete
+
+    printf("[TEST] insert\n");
+    for( size_t i = 0; i < 32; ++i ){
+        struct fibonacci_heap_node * node = fibonacci_heap_node_alloc();
+        node->key = malloc( sizeof( int ) );
+        *((int*)(node->key)) = i;
+        fh->insert_node( fh, node );
+        fh->pr( fh );
+    }
+
+    for( size_t i = 0; i < 32; ++i ){
+        fh->extract_min_node( fh );
+        fh->pr( fh );
+    }
 
     fibonacci_heap_free( fh );
-
     return 0;
 }
