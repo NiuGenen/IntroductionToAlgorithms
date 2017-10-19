@@ -40,10 +40,26 @@ int main()
         fh->pr( fh );
     }
 
-    for( size_t i = 0; i < 32; ++i ){
+    printf("[TEST] extract_min_node\n");
+    for( size_t i = 0; i < 16; ++i ){
         fh->extract_min_node( fh );
         fh->pr( fh );
     }
+
+    printf("[TEST] decrease key\n");
+    int * _key = ( int* )malloc( sizeof(int) );
+    *_key = 19;
+    struct fibonacci_heap_node * node = fh->search_key( fh, _key );
+    *_key = 2;
+    fh->decrease_key_by_node( fh, node, _key );
+    fh->pr( fh );
+
+    printf("[TEST] delete_node\n");
+    int *__key = ( int* )malloc( sizeof(int) );
+    *__key = 31;
+    struct fibonacci_heap_node * _node = fh->search_key( fh, __key );
+    fh->delete_node( fh, _node );
+    fh->pr( fh );
 
     fibonacci_heap_free( fh );
     return 0;

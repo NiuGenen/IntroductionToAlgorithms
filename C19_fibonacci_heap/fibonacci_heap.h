@@ -34,7 +34,7 @@ struct fibonacci_heap{
     //void                       * (*get_min_key )( struct fibonacci_heap * fh );
     struct fibonacci_heap_node * (*extract_min_node)( struct fibonacci_heap * fh );
     //void                       * (*extract_min_key) ( struct fibonacci_heap * fh );
-    void (*decrease_key_by_node)( struct fibonacci_heap * fh, struct fibonacci_heap_node * node, void * key ); // old key will be return
+    void* (*decrease_key_by_node)( struct fibonacci_heap * fh, struct fibonacci_heap_node * node, void * key ); // old key will be return
     //void  (*decrease_key_by_key) ( struct fibonacci_heap * fh, void * old_key, void * new_key );
     void  (*delete_node)( struct fibonacci_heap * fh, struct fibonacci_heap_node * node );
     //void (*delete_key)( struct fibonacci_heap * fh, void * key );
