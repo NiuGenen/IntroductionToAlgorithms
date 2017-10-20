@@ -11,11 +11,12 @@
  * 
  */
 struct huffman_dynamic{
-    size_t counter[256]     ; // count  = [ char  ]
-    uint8_t sort[256]       ; // char   = [ index ]
-    uint8_t code[256][257]  ; // code   = [ char  ]
-    int code_length[256]    ; // length = [ char ]
+    size_t counter[257]     ; // count  = [ char  ]
+    uint16_t sort[257]      ; // char   = [ index ]
+    uint8_t code[257][257]  ; // code   = [ char  ]
+    int code_length[257]    ; // length = [ char ]
     int n;
+    uint16_t c_empty;
     // operations 
     void (*add)( struct huffman_dynamic * dy, uint8_t c );
     void (*encode)( struct huffman_dynamic * dy, uint8_t c, uint8_t * code, int * length );
@@ -29,9 +30,10 @@ void huffman_dynamic_free( struct huffman_dynamic * hfm_dy );
 struct huffman_static{
     size_t counter[256];
     uint8_t sort[256];
+    uint8_t code[256][257];
     int n;
     // operations 
-    void (*code)( uint8_t c, uint8_t * code, int * length );
+    void (*encode)( uint8_t c, uint8_t * code, int * length );
     void (*pr)( struct huffman_static * );
     void (*clear)( struct huffman_static * dy);
 };
