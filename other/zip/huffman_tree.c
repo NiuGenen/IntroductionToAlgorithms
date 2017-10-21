@@ -92,10 +92,82 @@ void huffman_tree_free( struct huffman_tree * h )
     _FREE_( h );
 }
 
+void hfm_sort_count_go_ahead( struct huffman_tree * h, int i, int end )
+{
+    struct huffman_tree_node * _node = h->sort[ i ];
+    int index = i - 1;
+    while( index >= end && _node->count > h->sort[index]->count ){
+        h->sort[index+1] = h->sort[index];
+        h->sort[index+1]->index = index + 1;
+        index -= 1;
+    }
+    index += 1;
+    if( index != i )
+        h->sort[index] = _node;
+}
+
+/*
+ * @h : huffman tree
+ * @n : number of node to read
+ * @i : last node index in sort[]
+ */
+void hfm_st_sort_node( struct huffman_tree * h, int n , int i )
+{
+    int _i = i , i_ = i; // _i to read old ; i_ to set new
+    while( _i != ( i - n ) ){
+        struct huffman_tree_node * node = h->sort[ _i ];
+        if( node->left != NULL ){
+            i_ += 1;
+            h->sort[ i_ ] = node->left;
+            hfm_sort_count_go_ahead( h, i_, i+1 );
+        }
+        if( node->right != NULL ){
+            i_ += 1;
+            h->sort[ i_ ] = node->right;
+            hfm_sort_count_go_ahead( h, i_, i+1 );
+        }
+        _i -= 1;
+    }
+    if( i_ != i )
+        hfm_st_sort_node( h, i_ - i, i_ );
+}
+
+/*
+ * pre-condiction : huffman tree exists
+ */
+void hfm_st_sort( struct huffman_tree * h )
+{
+    h->sort[ 0 ] = h->root;
+    hfm_st_sort_node( h, 1, 0 );
+    // set sort[] index
+    for( int i = 0; i < h->n; ++i ){
+        h->sort[ i ]->index = i;
+    }
+}
+
 int hfm_encode( struct huffman_tree * h, uint8_t c, uint8_t * code_in_bit )
 {
     if( !(h->dynamic) ){
         // build huffman tree
+        int size = h->n;
+        while( size >= 2 ){
+            struct huffman_tree_node * node1 = h->sort[ size - 1 ];
+            struct huffman_tree_node * node2 = h->sort[ size - 2 ];
+            struct huffman_tree_node * parent = huffman_tree_node_alloc();
+            parent->is_leaf = 0;
+            parent->left  = node1;
+            parent->right = node2;
+            parent->count = node1->count + node2->count;
+            h->sort[ size - 2 ] = parent;
+            hfm_sort_count_go_ahead( h, size-2, 0 );
+            size -= 1;
+            h->n += 1;
+        }
+        h->root = h->sort[ 0 ];
+        // rebuild sort[]
+        hfm_st_sort( h );
+        // gen huffman code
+        hfm_code_gen( h );
     }
     for( int i = 0; i < 256 * 2 - 1; ++i ){
         struct huffman_tree_node * node = h->sort[i];
@@ -186,14 +258,10 @@ void hfm_add( struct huffman_tree * h, uint8_t c )
             // update counter
             h->counter[c]->count += 1;
             // update node count
-            h->counter[c]->node->count += 1;
+            struct huffman_tree_node * node = h->counter[c]->node;
+            node->count += 1;
             // update sort
-            int index = h->counter[c]->node->index;
-            while( index > 0 && h->sort[index]->count > h->sort[index-1]->count ){
-                h->sort[index] = h->sort[index-1];
-                index -= 1;
-            }
-            h->sort[index] = h->counter[c]->node;
+            hfm_sort_count_go_ahead( h, node->index, 0 );
         }else{
             int index = h->n - 1;
             // find index where h->sort[ index ].c == c
@@ -214,7 +282,7 @@ void hfm_add( struct huffman_tree * h, uint8_t c )
         // set sort
         h->sort[ h->n ] = node;
         node->index = h->n;
-        if( h->dynamic ){
+        if( h->dynamic ){ // [ n - 1 ] is empty_node
             h->sort[ h->n + 1 ] = h->empty_node;
             h->empty_node->index = h->n + 1;
             struct huffman_tree_node * n_parent = huffman_tree_node_alloc();
@@ -234,22 +302,22 @@ void hfm_add( struct huffman_tree * h, uint8_t c )
         }
         h->n += 1;
     }
-/*
-    printf("--- print to debug ---\n");
-    for( int i = 0; i < h->n; ++i ){
-        printf("addr = %-10lu, ", (size_t)h->sort[i] );
-        printf("parent = %-10lu, ", (size_t)h->sort[i]->parent );
-        if( h->sort[i]->is_leaf ){
-            printf("count = %-5lu, char = %c ", h->sort[i]->count , h->sort[i]->c );
-            printf("code = %s", h->sort[i]->code_in_bit );
-        }
-        else{
-            printf("left = %-10lu, right = %-10lu, count = %-5lu", (size_t)h->sort[i]->left, (size_t)h->sort[i]->right, h->sort[i]->count );
-        }
-        printf("\n");
-    }
-    printf("----------------------\n\n");
-    */
+    /*
+       printf("--- print to debug ---\n");
+       for( int i = 0; i < h->n; ++i ){
+       printf("addr = %-10lu, ", (size_t)h->sort[i] );
+       printf("parent = %-10lu, ", (size_t)h->sort[i]->parent );
+       if( h->sort[i]->is_leaf ){
+       printf("count = %-5lu, char = %c ", h->sort[i]->count , h->sort[i]->c );
+       printf("code = %s", h->sort[i]->code_in_bit );
+       }
+       else{
+       printf("left = %-10lu, right = %-10lu, count = %-5lu", (size_t)h->sort[i]->left, (size_t)h->sort[i]->right, h->sort[i]->count );
+       }
+       printf("\n");
+       }
+       printf("----------------------\n\n");
+       */
 }
 
 void hfm_pr( struct huffman_tree * h )
