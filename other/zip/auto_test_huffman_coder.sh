@@ -2,18 +2,16 @@
 
 ENINPUT=./asd.bit
 ENOUTPUT=./asd.bit.hfm
-#BBOUTPUT=~/asd.bit.hfm_
 DEOUTPUT=./asd.bit.mfh
 
 make clean 
 make 
 rm -rf ${ENINPUT} ${ENOUTPUT} ${DEOUTPUT}
-echo "ahsjgdqiuwgvfqhjegdasnbbd" > ${ENINPUT}
+echo "ahsjxkwehjfbvhgdodihwjebvrftruiiujwehdvjscyjhzngdqiuwgvfqhjegdasnbbd" > ${ENINPUT}
 echo "========================= TEST ENCODE ========================="
-./test_huffman_encoder ${ENINPUT} ${ENOUTPUT}
-#./test_bb ${ENOUTPUT} ${BBOUTPUT}
+./test_huffman_coder -e -i ${ENINPUT} -o ${ENOUTPUT} -t dynamic
 echo "========================= TEST DECODE ========================="
-./test_huffman_decoder ${ENOUTPUT} ${DEOUTPUT}
+./test_huffman_coder -d -i ${ENOUTPUT} -o ${DEOUTPUT}
 echo "====== cat src file ======"
 echo "Source file = ${ENINPUT}"
 cat ${ENINPUT}
