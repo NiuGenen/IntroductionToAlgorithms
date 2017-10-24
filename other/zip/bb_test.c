@@ -14,7 +14,7 @@ int main(int argc, char *argv[] )
     printf("Read  data from : %s\n", filename  );
     printf("Write data from : %s\n", filename_ );
 
-    int fd = open( filename, O_RDONLY, 0x0777 );
+    int fd = open( filename, O_RDONLY, 0666 );
     if( fd < 0 ){
         printf("[ERROR] fail to open file : %s", filename );
         return 0;
@@ -47,7 +47,7 @@ int main(int argc, char *argv[] )
     lseek( fd, 0, SEEK_SET );
 
     unlink( filename_ );
-    int fd_ = open( filename_, O_CREAT | O_WRONLY, 0x0777 );
+    int fd_ = open( filename_, O_CREAT | O_WRONLY, 0666 );
     struct bb_rw * bb_ = bb_rw_alloc( fd_, 0, 1, 4096 );
 
     bb = bb_rw_alloc( fd, 1, 1, 4096 );

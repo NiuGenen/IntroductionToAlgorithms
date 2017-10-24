@@ -15,9 +15,12 @@
     }\
 }while(0);
 
-int hfm_encode( struct huffman_tree * h, uint8_t c, uint8_t * code_in_bit );
-void hfm_add(   struct huffman_tree * h, uint8_t c );
-void hfm_pr(    struct huffman_tree * h );
+int  hfm_empty_code( struct huffman_tree * h, uint8_t * code_in_byte );
+int  hfm_encode( struct huffman_tree * h, uint8_t c, uint8_t * code_in_byte );
+uint16_t hfm_decode( struct huffman_tree * h, uint8_t * code, int length );
+void hfm_add   ( struct huffman_tree * h, uint8_t c );
+int  hfm_exist ( struct huffman_tree * h, uint8_t c );
+void hfm_pr    ( struct huffman_tree * h );
 
 void hfm_code_gen( struct huffman_tree * h );
 
@@ -57,8 +60,11 @@ struct huffman_tree * huffman_tree_alloc( int dynamic )
     h->n = 0;
     // operations
     h->encode = hfm_encode;
+    h->decode = hfm_decode;
     h->add    = hfm_add;
     h->pr     = hfm_pr;
+    h->exist  = hfm_exist;
+    h->empty_code = hfm_empty_code;
     // dynamic huffman tree
     h->dynamic = dynamic;
     if( dynamic ){
@@ -145,7 +151,16 @@ void hfm_st_sort( struct huffman_tree * h )
     }
 }
 
-int hfm_encode( struct huffman_tree * h, uint8_t c, uint8_t * code_in_bit )
+int hfm_empty_code( struct huffman_tree * h, uint8_t * code_in_byte )
+{
+    if( !(h->dynamic) ) return 0;
+
+    memcpy( code_in_byte, h->empty_node->code_in_byte, h->empty_node->code_length );
+    return h->empty_node->code_length;
+    return 0;
+}
+
+int hfm_encode( struct huffman_tree * h, uint8_t c, uint8_t * code_in_byte )
 {
     if( !(h->dynamic) ){
         // build huffman tree
@@ -173,11 +188,30 @@ int hfm_encode( struct huffman_tree * h, uint8_t c, uint8_t * code_in_bit )
         struct huffman_tree_node * node = h->sort[i];
         if( node->is_leaf && !(node->is_empty_node) && node->c == c )
         {
-            memcpy( code_in_bit, node->code_in_bit, 32 );
+            memcpy( code_in_byte, node->code_in_byte, 32 );
             return node->code_length;
         }
     }
     return 0;
+}
+
+uint16_t hfm_decode( struct huffman_tree * h, uint8_t * code, int length )
+{
+    if( h == NULL ) return 258;
+
+    struct huffman_tree_node * node = h->root;
+    int index = 0;
+    while( index < length && node != NULL ){
+        if( code[index] == '0' ){
+            node = node->left;
+        }else{
+            node = node->right;
+        }
+        index += 1;
+    }
+    if( index != length ) return 259;
+    if( node->is_empty_node ) return 256;
+    return node->c;
 }
 
 void hfm_code_gen_or( struct huffman_tree_node * node , uint8_t buf[32], int length, int bit )
@@ -187,7 +221,7 @@ void hfm_code_gen_or( struct huffman_tree_node * node , uint8_t buf[32], int len
     buf[ length ] = '\0';
     if( node->is_leaf ){
         node->code_length = length;
-        memcpy( node->code_in_bit, buf, 32 );
+        memcpy( node->code_in_byte, buf, 32 );
     }else{
         hfm_code_gen_or( node->left,  buf, length, 0 );
         hfm_code_gen_or( node->right, buf, length, 1 );
@@ -309,7 +343,7 @@ void hfm_add( struct huffman_tree * h, uint8_t c )
        printf("parent = %-10lu, ", (size_t)h->sort[i]->parent );
        if( h->sort[i]->is_leaf ){
        printf("count = %-5lu, char = %c ", h->sort[i]->count , h->sort[i]->c );
-       printf("code = %s", h->sort[i]->code_in_bit );
+       printf("code = %s", h->sort[i]->code_in_byte );
        }
        else{
        printf("left = %-10lu, right = %-10lu, count = %-5lu", (size_t)h->sort[i]->left, (size_t)h->sort[i]->right, h->sort[i]->count );
@@ -318,6 +352,11 @@ void hfm_add( struct huffman_tree * h, uint8_t c )
        }
        printf("----------------------\n\n");
        */
+}
+
+int hfm_exist( struct huffman_tree * h, uint8_t c )
+{
+    return h->counter[c] != NULL;
 }
 
 void hfm_pr( struct huffman_tree * h )
@@ -331,7 +370,7 @@ void hfm_pr( struct huffman_tree * h )
             printf("char = %3d ", node->c );
             printf("count = %-5lu, ", node->count);
             printf("code_length = %-3d ", node->code_length );
-            printf("code = %s ", node->code_in_bit );
+            printf("code = %s ", node->code_in_byte );
             printf("\n");
             bits += node->count * node->code_length;
             char_n_s += node->count;

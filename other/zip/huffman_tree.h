@@ -16,7 +16,7 @@ struct huffman_tree_node{
     size_t count;
     int index; // index in sort[]
     uint8_t c;
-    uint8_t code_in_bit[32]; // 8 * 32 = 256
+    uint8_t code_in_byte[256]; // 8 * 32 = 256
     int code_length;
     uint8_t is_leaf;
     uint8_t is_empty_node; // dynamic huffman code
@@ -30,8 +30,10 @@ struct huffman_tree{
     struct huffman_tree_node * empty_node;
     int n;
     // operations 
-    int (*empty_code)( struct huffman_tree * h, uint8_t * code_in_bit );
-    int (*encode)( struct huffman_tree * h, uint8_t c, uint8_t * code_in_bit );
+    int (*exist)( struct huffman_tree * h, uint8_t c );
+    int (*empty_code)( struct huffman_tree * h, uint8_t * code_in_byte );
+    int (*encode)( struct huffman_tree * h, uint8_t c, uint8_t * code_in_byte );
+    uint16_t (*decode)( struct huffman_tree * h, uint8_t * code, int length );
     void (*add)(   struct huffman_tree * h, uint8_t c );
     void (*pr)( struct huffman_tree * h );
 };
