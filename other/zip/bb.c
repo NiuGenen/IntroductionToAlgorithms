@@ -39,7 +39,7 @@ int bb_rd_bit( struct bb_rw * bb )
 int bb_wr_bit( struct bb_rw * bb , int bit)
 {
     if( !(bb->is_wr && bb->is_bit) ) return -1;
-    int byte = bit;
+    int byte = bit & 1;
     int index_of_byte = bb->offset_in_buf / 8;
     int index_of_bit  = bb->offset_in_buf % 8;
     byte = byte << index_of_bit;
