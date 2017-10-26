@@ -2,11 +2,11 @@ cc = gcc
 
 _test := test_time_asker test_dbg_info
 
-all: ${_test}
+all: ${_test} obj
 
-_ask_time_obj = ask_time.o
+_ask_time_obj := ask_time.o
 
-_obj = ${_ask_time_obj} ${_dbg_info_obj}
+_obj = ${_ask_time_obj}
 
 # test_time_asker
 
