@@ -1,7 +1,7 @@
 #ifndef _ASK_TIME_H_
 #define _ASK_TIME_H_ 
 
-#define ITA_DBG_ENABLE
+//#define ITA_DBG_ENABLE
 #include "dbg_info.h"
 
 #define ASKER_TYPE_CLOCK 0
