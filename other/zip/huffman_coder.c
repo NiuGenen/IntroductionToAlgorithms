@@ -343,7 +343,7 @@ int main( int argc, char *argv[] )
         return 0;
     }
 
-    printf("Encode File : %s\n", file_in );
+    printf("Input  File : %s\n", file_in );
     printf("Output File : %s\n", file_out);
 
     int ret = 0;
