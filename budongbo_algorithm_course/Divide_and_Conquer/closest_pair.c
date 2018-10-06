@@ -1,7 +1,9 @@
 #include "closest_pair.h"
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
+/*
 void qsort_pnts( fp_t *p_x, fp_t *p_y, int lo, int hi )
 {
     if( lo < hi ){
@@ -99,7 +101,7 @@ fp_t closest_pair( fp_t *p_x, fp_t *p_y, int n , fp_t *p_cp_x, fp_t *p_cp_y)
     qsort_pnts(p_x, p_y,0,n-1);
     return sqrt( closest_pair_cursion(p_x, p_y,0,n-1, p_cp_x, p_cp_y) );
 }
-
+*/
 
 // 0  [0]  [1]
 // 1  [2]  [3]
@@ -108,27 +110,34 @@ fp_t closest_pair( fp_t *p_x, fp_t *p_y, int n , fp_t *p_cp_x, fp_t *p_cp_y)
 // .
 // n  [2n] [2n+1]
 
-/*
+int cmp_fp_t( const void *a, const void *b )
+{
+    const fp_t *p1 = (fp_t*)a;
+    const fp_t *p2 = (fp_t*)b;
+    return *p1 > *p2;
+}
+
 void qsort_pnts( fp_t *p, int lo, int hi )
 {
-    if( lo < hi ){
-        fp_t pivot   = p[ 2 * lo ];
-        fp_t pivot_y = p[ 2 * lo + 1 ];
-        int i = lo, j = hi;
-        while( i < j )
-        {
-            while( i < j && pivot <= p[ 2 * j ] ) j -= 1;
-            p[ 2 * i     ] = p[ 2 * j ];
-            p[ 2 * i + 1 ] = p[ 2 * j + 1 ];
-            while( i < j && pivot >= p[ 2 * i ] ) i += 1;
-            p[ 2 * j     ] = p[ 2 * i ];
-            p[ 2 * j + 1 ] = p[ 2 * i + 1 ];
-        }
-        p[ 2 * i     ] = pivot;
-        p[ 2 * i + 1 ] = pivot_y;
-        qsort_pnts(p, lo, i-1);
-        qsort_pnts(p, i+1, hi);
-    }
+    qsort( &(p[lo]), hi - lo + 1, sizeof(fp_t) * 2, cmp_fp_t );
+    /*if( lo < hi ){*/
+        /*fp_t pivot   = p[ 2 * lo ];*/
+        /*fp_t pivot_y = p[ 2 * lo + 1 ];*/
+        /*int i = lo, j = hi;*/
+        /*while( i < j )*/
+        /*{*/
+            /*while( i < j && pivot <= p[ 2 * j ] ) j -= 1;*/
+            /*p[ 2 * i     ] = p[ 2 * j ];*/
+            /*p[ 2 * i + 1 ] = p[ 2 * j + 1 ];*/
+            /*while( i < j && pivot >= p[ 2 * i ] ) i += 1;*/
+            /*p[ 2 * j     ] = p[ 2 * i ];*/
+            /*p[ 2 * j + 1 ] = p[ 2 * i + 1 ];*/
+        /*}*/
+        /*p[ 2 * i     ] = pivot;*/
+        /*p[ 2 * i + 1 ] = pivot_y;*/
+        /*qsort_pnts(p, lo, i-1);*/
+        /*qsort_pnts(p, i+1, hi);*/
+    /*}*/
 }
 
 fp_t closest_pair_cursion( fp_t *p, int lo, int hi , fp_t *p_cp)
@@ -205,24 +214,23 @@ fp_t closest_pair( fp_t *p, int n , fp_t *p_cp)
     qsort_pnts(p,0,n-1);
     return sqrt( closest_pair_cursion(p,0,n-1, p_cp) );
 }
-*/
 
-fp_t native_closest_pair( fp_t *p_x, fp_t *p_y, int n )
-{
-    int i = 0;
-    int j = 0;
-    fp_t dis = DISTANCE(p_x, p_y,0,1);
-    fp_t tmp;
-    for( i = 0; i < n; ++i ){
-        for( j = i + 1; j < n; ++j ){
-            tmp = DISTANCE(p_x, p_y,i,j);
-            dis = dis < tmp ? dis : tmp;
-        }
-    }
-    return sqrt(dis);
-}
 
-/*
+/*fp_t native_closest_pair( fp_t *p_x, fp_t *p_y, int n )*/
+/*{*/
+    /*int i = 0;*/
+    /*int j = 0;*/
+    /*fp_t dis = DISTANCE(p_x, p_y,0,1);*/
+    /*fp_t tmp;*/
+    /*for( i = 0; i < n; ++i ){*/
+        /*for( j = i + 1; j < n; ++j ){*/
+            /*tmp = DISTANCE(p_x, p_y,i,j);*/
+            /*dis = dis < tmp ? dis : tmp;*/
+        /*}*/
+    /*}*/
+    /*return sqrt(dis);*/
+/*}*/
+
 fp_t native_closest_pair( fp_t *p, int n )
 {
     int i = 0;
@@ -237,4 +245,3 @@ fp_t native_closest_pair( fp_t *p, int n )
     }
     return sqrt(dis);
 }
-*/
