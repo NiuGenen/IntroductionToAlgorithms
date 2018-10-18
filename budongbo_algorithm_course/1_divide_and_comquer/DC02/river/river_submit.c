@@ -58,11 +58,6 @@ int river( int *stone, int n, int m )
     return hi;
 }
 
-/*int cmpint( const void *a, const void *b )*/
-/*{*/
-    /*return *((int*)a) > *((int*)b);*/
-/*}*/
-
 int main()
 {
     int L,n,m,i;
