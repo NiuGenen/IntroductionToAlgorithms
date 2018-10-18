@@ -7,8 +7,8 @@ clean_file = test_river
 
 all: river_test
 
-river_test: ${river_file} #river_test.c
-	cc -o test_river ${river_file} #river_test.c
+river_test: ${river_file}
+	cc -o test_river ${river_file} 
 
 clean:
 	rm -rf ${clean_file}

@@ -1,38 +1,22 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-/* no greedy for this problem */
-/* no DP for this problem too */
-
-int river( int *num, int n, int m )
+// 
+// [0] [1] [...] [n]
+// 
+// nr = n
+// 
+long river( long *step, int nr, int m )
 {
-    // num.length == n + 2
-    // [0]    is 0
-    // [n+1]  is L
-    // [1..n] is the stone
-    int *step = (int*)malloc( sizeof(int) * ( n + 1 ) );
     int i = 0;
-    int nr = n + 1;
     int min = 0;
     int min_i = 0;
     int merge = 0;
 
-    // 0, 1, ... , n
-    for( i = 0; i < nr ; ++i ){
-        step[i] = num[i+1] - num[i];
-    }
-    for( i = 0; i < nr; ++i ){
-        printf("%2d ", step[i]);
-    }
-    printf("\n");
-
-    // 1. [0][1][...][n][n+1]
-    // 2. [0][1][...][n]
-    // ...
     while( m > 0 ){
         min   = step[0];
         min_i = 0;
-        for( i = 1; i < nr; ++i ){
+        for( i = 1; i <= nr; ++i ){
             if( step[i] < min ){
                 min = step[i];
                 min_i = i;
@@ -56,24 +40,49 @@ int river( int *num, int n, int m )
             step[min_i] += step[min_i + 1];
             i = min_i + 1;
         }
-        // move [i][...][n+1] one left
+        // move [i][...][n] one left
         for( ;i < nr; ++i ){
             step[i] = step[i+1];
         }
         // next loop
-        m -= 1;
+        m  -= 1;
         nr -= 1;
-        // print
-        for( i = 0; i < nr; ++i ){
-            printf("%2d ", step[i]);
-        }
-        printf("\n");
     }
-
     // find min
     min   = step[0];
-    for( i = 1; i < nr; ++i )
+    for( i = 1; i <= nr; ++i )
         if( step[i] < min )
             min = step[i];
     return min;
+}
+
+int cmpint( const void *a, const void *b )
+{
+    return *((long*)a) > *((long*)b);
+}
+
+int main()
+{
+    int L,n,m,i;
+    long num[50010];
+
+    scanf("%d", &L);
+    scanf("%d", &n);
+    scanf("%d", &m);
+
+    for( i = 0; i < n; ++i ){
+        scanf("%ld", num + i + 1);
+    }
+
+    num[0]   = 0;
+    num[n+1] = L;
+
+    // [0] [1] [...] [n+1]
+    qsort( num, n + 2, sizeof(long), cmpint );
+    for( i = 0; i < n + 1; ++i ){
+        num[i] = num[i+1] - num[i];
+    }
+
+    // [0] [1] [...] [n]
+    printf("%ld\n", river(num,n,m) );
 }
