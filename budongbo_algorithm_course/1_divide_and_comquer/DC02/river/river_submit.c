@@ -76,4 +76,6 @@ int main()
     mqsort( num, 0, n+1);
 
     printf("%d\n", river(num,n,m) );
+
+    return 0;
 }
