@@ -1,73 +1,73 @@
-#include <stdio.h>
-/*
- * The first line of input is T, which means there are
- * T groups test cases. For each test case, the first
- * line contains the length of sequence N, and the
- * second line contains the elements of sequence - N
- * integers in the range from 0 to 1000000 each,
- * separated by spaces(1 <= N <= 100000).
- */
+#include<stdio.h>
+//¶¨Òåmax×÷Îª´æ½á¹ûµÄ±äÁ¿
 
-int lis(int *num, int lo, int hi);
-int mmv[100000];
-
+int Longestincreasingsquence(int *nums, int n){
+	if (n==0){
+		return 0;
+	}
+	
+	int max=1;
+	int numslength = n;
+	int i;
+	int k;
+	int LIS[100000];
+	
+	LIS[1]= nums[0];
+	for( i = 1; i < numslength; ++i){
+		if(LIS[max]<nums[i]){
+			max=max+1;
+			LIS[max]=nums[i];
+		}
+		else{
+			//
+			// LIS records nums[0][...][i-1]
+			// LIS[1][2][...][max]
+			// new element [i]
+			//
+			if(LIS[1]>nums[i]){
+				LIS[1]=nums[i];
+			}
+			else{
+				for( k = 2; k <= max; ++k){
+					// LIS[k-1] < nums[i] < LIS[k]
+					// LIS[k-3] < nums[i]
+					// LIS[k-2] < nums[i]
+                    if( LIS[k-1] < nums[i] && nums[i] < LIS[k] ){
+				        LIS[k]=nums[i];
+						break;
+                    }
+				}
+			}
+		}
+	}
+	
+	return max;
+}
+	
 int main()
 {
-    int t;
-    int i;
-    int j;
-    int n;
-    int num[100000];
+	int T=0;
+	int i,j;
+	int n;
+	int num[100000];
+	int q1;
 
-    scanf("%d",&t); // number of problems;
+	scanf("%d",&T);
 
-    for( i = 0; i < t; ++i ){
-        scanf("%d",&n); // number of numbers
-        for( j = 0; j < n; ++j )
-            scanf("%d", num + j);
-        printf("%d\n", lis(num,0,n-1) );
-    }
+	for(i=0;i<T;i++){
+        // 0  1 2 3 ... T : ¿¿¿T+1¿
+        // ¿¿¿T¿
+		n=0;
+		scanf("%d",&n);
+	
+		for(j=0;j<n;++j)
+			scanf("%d",&num[j]);
+		
+		q1=Longestincreasingsquence(num,n);
+		
+		printf("%d\n",q1);
+	}
 
-    return 0;
+	return 0;
 }
-
-// num[] : numbers with index @i
-// mmv[] : mmv[LSI] records LSI's MinLasValue among all possible sub-sequence
-
-int bs(int *n, int lo, int hi, int k)
-{
-    int mid = 0;
-    while(lo <= hi){
-        mid = (lo + hi) / 2;
-        if( n[mid] <= k)
-            lo = mid + 1;
-        else 
-            hi = mid - 1;
-    }
-    return lo;
-}
-
-int lis(int *num, int lo, int hi)
-{
-    int i;
-    int max;
-    int idx;
-
-    if( lo > hi ) return 0;
-
-    max     = 1;
-    mmv[1]  = num[lo];
-    for( i = lo + 1; i <= hi; ++i ){
-        if( num[i] > mmv[max] ){
-            max += 1;
-            mmv[max] = num[i];
-        }
-        else{
-            idx = bs(mmv,1,max,num[i]);
-            if( idx > 0 && mmv[idx-1] != num[i] )
-                mmv[idx] = num[i];
-        }
-    }
-
-    return max;
-}
+		
